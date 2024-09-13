@@ -5,16 +5,12 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class StreamHandler extends BinaryWebSocketHandler {
 
-    private AtomicReference<WebSocketSession> activeClient = new AtomicReference<>(null);
+    private final AtomicReference<WebSocketSession> activeClient = new AtomicReference<>(null);
     private Process ffmpegProcess;
     private OutputStream ffmpegInput;
     private long lastDataTimestamp;
@@ -87,13 +83,16 @@ public class StreamHandler extends BinaryWebSocketHandler {
     private void startFFmpegProcess() throws IOException {
         ProcessBuilder builder = new ProcessBuilder(
                 "ffmpeg",
-                "-i",//
-                "pipe:0" ,
-                "-c:v", "libx264", "-preset", "veryfast", "-tune", "zerolatency", "-pix_fmt", "yuv420p",
+                "-i",
+                "pipe:0",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "veryfast", "-tune", "zerolatency", "-pix_fmt", "yuv420p",
                 "-b:v", "1000k", "-maxrate", "1000k", "-bufsize", "2000k",
                 "-g", "60", "-keyint_min", "60", "-sc_threshold", "0",
                 "-c:a", "aac", "-b:a", "128k",
-                "-f", "flv", "rtmp://192.168.1.69:1935/live/stream"
+                "-f", "flv", "rtmp://192.168.1.69:1935/live/stream" // Replace with your RTMP server
         );
         builder.redirectErrorStream(true); // Capture both stdout and stderr
         ffmpegProcess = builder.start();
